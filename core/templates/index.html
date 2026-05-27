@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videogames</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; border: 1px solid #ccc; text-align: left; }
+        th { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Videogames</h1>
+    {% if videogames %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Género</th>
+                    <th>Desarrollador</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in videogames %}
+                    <tr>
+                        <td>{{ game.id }}</td>
+                        <td>{{ game.name }}</td>
+                        <td>{{ game.genre }}</td>
+                        <td>{{ game.developer }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay videojuegos registrados.</p>
+    {% endif %}
+</body>
+</html>
