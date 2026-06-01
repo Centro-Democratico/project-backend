@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from core.views import consult_videogames
+from core.views import videogame_list, videogame_detail
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('videogames/', consult_videogames, name='consult_videogames'),
+    path('videogames/', videogame_list),
+    path('videogames/<uuid:pk>/', videogame_detail),
 ]
