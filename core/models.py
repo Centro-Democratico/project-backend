@@ -33,10 +33,11 @@ class Hardware(models.Model):
     gb_ram=models.IntegerField()
     storage_type=models.CharField(max_length=100)
     created_at=models.DateTimeField(auto_now_add=True)
+
     class Meta:
         db_table='hardware'
         managed = True
-    
+
 class Videogame(models.Model):
     id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -99,3 +100,88 @@ class GameResult(models.Model):
     class Meta:
             db_table='game_result'
             managed = True
+
+# --- RF_9, RF_11, RF_13 (dvargaspa) ---
+
+# RF_11: Catálogo global de componentes de hardware para el ranking.
+# Entidad independiente de Hardware (que está ligado a un User).
+# El admin puede agregar, editar y eliminar componentes desde el panel.
+class HardwareComponent(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    brand=models.CharField(max_length=100)
+    model=models.CharField(max_length=255)
+    type=models.CharField(max_length=10)  # 'CPU' o 'GPU'
+    base_specs=models.TextField(blank=True)  # descripción libre de specs base
+    launch_year=models.IntegerField(null=True, blank=True)
+    base_score=models.FloatField(null=True, blank=True)  # score de referencia para el ranking
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table='hardware_component'
+        managed=True
+
+# RF_9, RF_13: Sesión de benchmark con métricas agregadas (promedio y máximo)
+# de CPU, GPU, RAM y almacenamiento durante la prueba.
+# is_anonymous=True indica que fue enviada como telemetría anónima (RF_9).
+class BenchmarkSession(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    hardware=models.ForeignKey(Hardware, on_delete=models.CASCADE, null=True, blank=True)
+
+    started_at=models.DateTimeField()
+    ended_at=models.DateTimeField()
+
+    # CPU
+    cpu_avg=models.FloatField()
+    cpu_max=models.FloatField()
+    cpu_temp_avg=models.FloatField(null=True, blank=True)
+    cpu_temp_max=models.FloatField(null=True, blank=True)
+
+    # GPU
+    gpu_avg=models.FloatField()
+    gpu_max=models.FloatField()
+    gpu_temp_avg=models.FloatField(null=True, blank=True)
+    gpu_temp_max=models.FloatField(null=True, blank=True)
+
+    # RAM
+    ram_avg_gb=models.FloatField()
+    ram_max_gb=models.FloatField()
+
+    # Almacenamiento (MB/s)
+    disk_read_avg=models.FloatField(null=True, blank=True)
+    disk_write_avg=models.FloatField(null=True, blank=True)
+
+    # Score general de la sesión
+    score=models.FloatField(null=True, blank=True)
+
+    # RF_9: True si fue enviada como telemetría anónima
+    is_anonymous=models.BooleanField(default=False)
+
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table='benchmark_session'
+        managed=True
+
+# RF_13: Muestras individuales por intervalo de tiempo dentro de una sesión.
+# Necesarias para generar la gráfica de rendimiento temporal del informe técnico.
+class SessionSample(models.Model):
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    session=models.ForeignKey(BenchmarkSession, on_delete=models.CASCADE, related_name='samples')
+
+    timestamp_seconds=models.IntegerField()  # segundos desde el inicio de la sesión
+    cpu_pct=models.FloatField()
+    gpu_pct=models.FloatField()
+    ram_gb=models.FloatField()
+    cpu_temp=models.FloatField(null=True, blank=True)
+    gpu_temp=models.FloatField(null=True, blank=True)
+    disk_read=models.FloatField(null=True, blank=True)   # MB/s
+    disk_write=models.FloatField(null=True, blank=True)  # MB/s
+
+    class Meta:
+        db_table='session_sample'
+        managed=True
+        ordering=['timestamp_seconds']
