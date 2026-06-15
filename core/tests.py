@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 from django.test import TestCase, Client, SimpleTestCase
 from unittest.mock import patch, MagicMock
 from .models import HardwareComponent, BenchmarkSession, Hardware, User
@@ -226,7 +225,7 @@ class SessionReportTests(TestCase):
         response = self.client.get('/sessions/')
         self.assertEqual(response.status_code, 200)
         body = json.loads(response.content)
-        self.assertEqual(len(body), 2)=======
+        self.assertEqual(len(body), 2)
 
 # =============================================================================
 # CU_01 – RESUMEN TÉCNICO DE FPS
@@ -283,4 +282,3 @@ class MarketComparisonTests(SimpleTestCase):
         """Edge case: evitar crash si los datos del mercado están en cero."""
         gap = calculate_performance_gap(144, 0)
         self.assertEqual(gap, 0.0)
->>>>>>> Stashed changes
