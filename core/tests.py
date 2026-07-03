@@ -282,3 +282,51 @@ class MarketComparisonTests(SimpleTestCase):
         """Edge case: evitar crash si los datos del mercado están en cero."""
         gap = calculate_performance_gap(144, 0)
         self.assertEqual(gap, 0.0)
+
+# =============================================================================
+# RF_6 – COMPARAR RESULTADOS CON DISPOSITIVOS ESTÁNDAR (dangomezma)
+# =============================================================================
+
+class SessionCompareTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.fake_id = uuid.uuid4()
+
+    def _MockSession(self):
+        mock_session = MagicMock(spec=BenchmarkSession)
+        mock_session.id = self.fake_id
+        mock_session.score = 84.0
+        mock_session.cpu_avg = 62.0
+        mock_session.gpu_avg = 78.0
+        mock_session.ram_avg_gb = 24.0
+        mock_session.hardware = None
+        return mock_session
+
+    @patch('core.views.get_object_or_404')
+    def test_CompareReturnsCorrectStructure(self, mock_get):
+        """Happy path: la comparativa contiene métricas del usuario y estándares."""
+        mock_get.return_value = self._MockSession()
+        response = self.client.get(f'/sessions/{self.fake_id}/compare/')
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.content)
+        self.assertIn('user_metrics', body)
+        self.assertIn('market_standards', body)
+        self.assertIn('comparison', body)
+
+    @patch('core.views.get_object_or_404')
+    def test_CompareNonexistentSessionReturns404(self, mock_get):
+        """Error: comparar una sesión inexistente retorna 404."""
+        from django.http import Http404
+        mock_get.side_effect = Http404
+        response = self.client.get(f'/sessions/{uuid.uuid4()}/compare/')
+        self.assertEqual(response.status_code, 404)
+
+    @patch('core.views.get_object_or_404')
+    def test_CompareUserMetricsAreCorrect(self, mock_get):
+        """Edge case: las métricas del usuario en la comparativa coinciden con la sesión."""
+        mock_get.return_value = self._MockSession()
+        response = self.client.get(f'/sessions/{self.fake_id}/compare/')
+        body = json.loads(response.content)
+        self.assertEqual(body['comparison']['fps_avg']['user'], 84.0)
+        self.assertEqual(body['comparison']['cpu_usage_pct']['user'], 62.0)

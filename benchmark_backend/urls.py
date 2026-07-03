@@ -5,12 +5,13 @@ from core.views import (
     component_list, component_detail,
     telemetry_submit,
     session_list, session_report,
+    session_compare,
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # Videogames (existente)
+    # RF_10 – Gestionar videojuegos
     path('videogames/', videogame_list),
     path('videogames/<uuid:pk>/', videogame_detail),
 
@@ -24,4 +25,7 @@ urlpatterns = [
     # RF_13 – Historial e informe técnico de sesiones
     path('sessions/', session_list),
     path('sessions/<uuid:pk>/report/', session_report),
+
+    # RF_6 – Comparar resultados con dispositivos estándar
+    path('sessions/<uuid:pk>/compare/', session_compare),
 ]
