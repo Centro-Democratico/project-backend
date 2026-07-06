@@ -289,3 +289,94 @@ def session_list(request):
 def session_report(request, pk):
     session = get_object_or_404(BenchmarkSession, pk=pk)
     return JsonResponse(_session_to_report(session))
+
+# =============================================================================
+# RF_6 – COMPARAR RESULTADOS CON DISPOSITIVOS ESTÁNDAR
+# =============================================================================
+
+# Valores de referencia de mercado por gama
+# Basados en estándares típicos de la industria
+MARKET_STANDARDS = {
+    'low': {
+        'label': 'Gama Baja',
+        'fps_avg': 32,
+        'fps_min': 18,
+        'fps_max': 45,
+        'cpu_usage_pct': 98,
+        'gpu_model': 'GTX 1650',
+    },
+    'mid': {
+        'label': 'Gama Media',
+        'fps_avg': 68,
+        'fps_min': 42,
+        'fps_max': 85,
+        'cpu_usage_pct': 75,
+        'gpu_model': 'RTX 3080',
+    },
+    'high': {
+        'label': 'Gama Alta',
+        'fps_avg': 112,
+        'fps_min': 85,
+        'fps_max': 145,
+        'cpu_usage_pct': 45,
+        'gpu_model': 'RTX 4090',
+    },
+}
+
+def _BuildComparisonTable(session):
+    """Construye la tabla comparativa cruzando las métricas de la sesión
+    del usuario contra los estándares de mercado por gama."""
+    user_metrics = {
+        'label': 'Mi equipo',
+        'fps_avg': session.score,
+        'cpu_usage_pct': session.cpu_avg,
+        'gpu_usage_pct': session.gpu_avg,
+        'ram_avg_gb': session.ram_avg_gb,
+    }
+
+    hardware_info = {}
+    if session.hardware:
+        hardware_info = {
+            'cpu': session.hardware.cpu,
+            'gpu': session.hardware.gpu,
+            'gb_ram': session.hardware.gb_ram,
+        }
+
+    return {
+        'session_id': str(session.id),
+        'hardware': hardware_info,
+        'user_metrics': user_metrics,
+        'market_standards': MARKET_STANDARDS,
+        'comparison': {
+            'fps_avg': {
+                'low': MARKET_STANDARDS['low']['fps_avg'],
+                'mid': MARKET_STANDARDS['mid']['fps_avg'],
+                'high': MARKET_STANDARDS['high']['fps_avg'],
+                'user': session.score,
+            },
+            'cpu_usage_pct': {
+                'low': MARKET_STANDARDS['low']['cpu_usage_pct'],
+                'mid': MARKET_STANDARDS['mid']['cpu_usage_pct'],
+                'high': MARKET_STANDARDS['high']['cpu_usage_pct'],
+                'user': session.cpu_avg,
+            },
+            'gpu_usage_pct': {
+                'low': None,
+                'mid': None,
+                'high': None,
+                'user': session.gpu_avg,
+            },
+            'ram_avg_gb': {
+                'low': None,
+                'mid': None,
+                'high': None,
+                'user': session.ram_avg_gb,
+            },
+        },
+    }
+
+@csrf_exempt
+@require_http_methods(['GET'])
+def session_compare(request, pk):
+    session = get_object_or_404(BenchmarkSession, pk=pk)
+    return JsonResponse(_BuildComparisonTable(session))
