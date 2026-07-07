@@ -63,7 +63,7 @@ if not exist "%FRONTEND%" (
 :: 3. Levantar base de datos con Docker
 :: ------------------------------------------------
 echo [3/5] Levantando base de datos con Docker...
-cd /d "%BASE%"
+cd /d "%BACKEND%"
 docker compose up -d db
 
 echo     Esperando a que PostgreSQL este listo...
