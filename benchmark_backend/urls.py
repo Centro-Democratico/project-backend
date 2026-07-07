@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.urls import path
+from core import views
+
 from core.views import (
-    videogame_list, videogame_detail,
+    receive_fps_sample, videogame_list, videogame_detail,
     component_list, component_detail,
     telemetry_submit,
     session_list, session_report,
@@ -28,4 +30,7 @@ urlpatterns = [
 
     # RF_6 – Comparar resultados con dispositivos estándar
     path('sessions/<uuid:pk>/compare/', session_compare),
+
+    path('api/benchmark/fps/', views.submit_fps_session, name='submit_fps_session'),
+    path('api/fps-samples/', receive_fps_sample, name='receive_fps_sample'),
 ]

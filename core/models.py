@@ -185,3 +185,35 @@ class SessionSample(models.Model):
         db_table='session_sample'
         managed=True
         ordering=['timestamp_seconds']
+
+from django.db import models
+
+# ========== MODELOS DE FPS Y HARDWARE ==========
+
+class FPSSession(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Métricas de Hardware
+    cpu_avg = models.FloatField(null=True, blank=True)
+    cpu_max = models.FloatField(null=True, blank=True)
+    gpu_avg = models.FloatField(null=True, blank=True)
+    gpu_max = models.FloatField(null=True, blank=True)
+    ram_avg_gb = models.FloatField(null=True, blank=True)
+    ram_max_gb = models.FloatField(null=True, blank=True)
+    # Métricas de FPS
+    fps_avg = models.FloatField(null=True, blank=True)
+    fps_max = models.FloatField(null=True, blank=True)
+    fps_min = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"FPSSession {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+class FPSSample(models.Model):
+    session = models.ForeignKey(FPSSession, on_delete=models.CASCADE, related_name='samples')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    fps = models.FloatField()
+    cpu_usage = models.FloatField(null=True, blank=True)
+    gpu_usage = models.FloatField(null=True, blank=True)
+    ram_usage_gb = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Sample FPS: {self.fps} (Session {self.session.id})"

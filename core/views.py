@@ -3,8 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
-from .models import Videogame, HardwareComponent, BenchmarkSession
-
+from .models import Videogame, HardwareComponent, BenchmarkSession, FPSSession, FPSSample
 
 # =============================================================================
 # VIDEOGAMES (existente)
@@ -380,3 +379,58 @@ def _BuildComparisonTable(session):
 def session_compare(request, pk):
     session = get_object_or_404(BenchmarkSession, pk=pk)
     return JsonResponse(_BuildComparisonTable(session))
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def submit_fps_session(request):
+    try:
+        data = json.loads(request.body)
+        
+        # 1. Crear la sesión principal con los promedios
+        session = FPSSession.objects.create(
+            cpu_avg=data.get('cpu_avg'),
+            cpu_max=data.get('cpu_max'),
+            gpu_avg=data.get('gpu_avg'),
+            gpu_max=data.get('gpu_max'),
+            ram_avg_gb=data.get('ram_avg_gb'),
+            ram_max_gb=data.get('ram_max_gb'),
+            fps_avg=data.get('fps_avg'),
+            fps_max=data.get('fps_max'),
+            fps_min=data.get('fps_min')
+        )
+        
+        # 2. Guardar las muestras individuales (samples)
+        samples_data = data.get('samples', [])
+        samples = [
+            FPSSample(
+                session=session,
+                fps=s.get('fps'),
+                cpu_usage=s.get('cpu_usage'),
+                gpu_usage=s.get('gpu_usage'),
+                ram_usage_gb=s.get('ram_usage_gb')
+            ) for s in samples_data
+        ]
+        FPSSample.objects.bulk_create(samples)
+        
+        return JsonResponse({'status': 'success', 'session_id': session.id}, status=201)
+    
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
+@csrf_exempt
+def receive_fps_sample(request):
+    if request.method == 'POST':
+        try:
+            # Leemos el JSON que envía telemetry.py
+            data = json.loads(request.body)
+            
+            # Por ahora solo lo imprimimos para confirmar que llega
+            print("🚀 Datos recibidos del cliente:", data)
+            
+            # Más adelante aquí crearemos el registro: FPSSample.objects.create(...)
+            
+            return JsonResponse({"message": "Datos recibidos con éxito"}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+            
+    return JsonResponse({"error": "Método no permitido"}, status=405)

@@ -8,9 +8,9 @@ services:
     restart: always
 
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: benchmark_user
+      POSTGRES_PASSWORD: 179512
+      POSTGRES_DB: benchmark_db
 
     ports:
       - "${DB_PORT}:5432"
