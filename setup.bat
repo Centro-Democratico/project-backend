@@ -31,6 +31,12 @@ if errorlevel 1 (
     pause & exit /b 1
 )
 
+where docker >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Docker no esta instalado. Descargalo en https://docker.com
+    pause & exit /b 1
+)
+
 echo [OK] Dependencias verificadas.
 echo.
 
@@ -38,25 +44,35 @@ echo.
 :: 2. Clonar o actualizar repositorios
 :: ------------------------------------------------
 if not exist "%BACKEND%" (
-    echo [1/4] Clonando backend...
+    echo [1/5] Clonando backend...
     git clone https://github.com/Centro-Democratico/project-backend.git "%BACKEND%"
 ) else (
-    echo [1/4] Backend ya existe, actualizando...
+    echo [1/5] Backend ya existe, actualizando...
     cd /d "%BACKEND%" && git pull
 )
 
 if not exist "%FRONTEND%" (
-    echo [2/4] Clonando frontend...
+    echo [2/5] Clonando frontend...
     git clone https://github.com/Centro-Democratico/project-frontend.git "%FRONTEND%"
 ) else (
-    echo [2/4] Frontend ya existe, actualizando...
+    echo [2/5] Frontend ya existe, actualizando...
     cd /d "%FRONTEND%" && git pull
 )
 
 :: ------------------------------------------------
-:: 3. Configurar backend
+:: 3. Levantar base de datos con Docker
 :: ------------------------------------------------
-echo [3/4] Configurando backend...
+echo [3/5] Levantando base de datos con Docker...
+cd /d "%BASE%"
+docker compose up -d db
+
+echo     Esperando a que PostgreSQL este listo...
+timeout /t 5 /nobreak >nul
+
+:: ------------------------------------------------
+:: 4. Configurar backend
+:: ------------------------------------------------
+echo [4/5] Configurando backend...
 cd /d "%BACKEND%"
 
 if not exist ".venv" (
@@ -64,34 +80,25 @@ if not exist ".venv" (
     python -m venv .venv
 )
 
-:: Siempre regenerar el .env para evitar problemas de codificacion
-echo.
-echo     Ingresa las credenciales de tu PostgreSQL local:
-set /p DB_USER="     Usuario [benchmark_user]: "
-if "!DB_USER!"=="" set DB_USER=benchmark_user
-set /p DB_PASSWORD="     Contrasena: "
-set /p DB_NAME="     Base de datos [benchmark_db]: "
-if "!DB_NAME!"=="" set DB_NAME=benchmark_db
-
+:: Generar .env con credenciales de Docker
 (
     echo DB_HOST=localhost
     echo DB_PORT=5432
-    echo DB_USER=!DB_USER!
-    echo DB_PASSWORD=!DB_PASSWORD!
-    echo DB_NAME=!DB_NAME!
+    echo DB_USER=benchmark_user
+    echo DB_PASSWORD=benchmark_pass
+    echo DB_NAME=benchmark_db
     echo ENV=development
 ) > .env
 echo     .env generado correctamente.
-echo.
 
 call .venv\Scripts\activate
 pip install -r requirements.txt --quiet
 python manage.py migrate --run-syncdb
 
 :: ------------------------------------------------
-:: 4. Configurar frontend
+:: 5. Configurar frontend
 :: ------------------------------------------------
-echo [4/4] Configurando frontend...
+echo [5/5] Configurando frontend...
 cd /d "%FRONTEND%"
 
 if not exist "node_modules" (

@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:16
+    container_name: benchmark_db
+    restart: always
+
+    environment:
+      POSTGRES_USER: benchmark_user
+      POSTGRES_PASSWORD: benchmark_pass
+      POSTGRES_DB: benchmark_db
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./project-backend/scripts/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
