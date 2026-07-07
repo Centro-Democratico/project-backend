@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 echo ================================================
 echo        KnowYourMarks - Setup
@@ -7,21 +7,9 @@ echo ================================================
 echo.
 
 set BASE=%~dp0
-set BACKEND=%BASE%
-set FRONTEND=%BASE%..\project-frontend
+set BACKEND=%BASE%project-backend
+set FRONTEND=%BASE%project-frontend
 
-:: Verificar que el setup se haya ejecutado
-if not exist "%BACKEND%.venv" (
-    echo [ERROR] No se encontro el entorno virtual del backend.
-    echo         Ejecuta setup.bat primero.
-    pause & exit /b 1
-)
-
-if not exist "%FRONTEND%\node_modules" (
-    echo [ERROR] No se encontraron las dependencias del frontend.
-    echo         Ejecuta setup.bat primero.
-    pause & exit /b 1
-)
 :: ------------------------------------------------
 :: 1. Verificar dependencias
 :: ------------------------------------------------
