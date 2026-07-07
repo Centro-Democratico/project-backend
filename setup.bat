@@ -100,7 +100,12 @@ python manage.py migrate --run-syncdb
 :: ------------------------------------------------
 echo [5/5] Configurando frontend...
 cd /d "%FRONTEND%"
+:: Crear el archivo .env automáticamente a partir del ejemplo
 
+if not exist ".env" (
+    copy ".env.example" ".env"
+    echo     Archivo .env creado automaticamente para el frontend.
+)
 if not exist "node_modules" (
     echo     Instalando dependencias npm...
     npm install --silent
