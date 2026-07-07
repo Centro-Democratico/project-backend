@@ -2,11 +2,11 @@
 setlocal
 
 set BASE=%~dp0
-set BACKEND=%BASE%project-backend
-set FRONTEND=%BASE%project-frontend
+set BACKEND=%BASE%
+set FRONTEND=%BASE%..\project-frontend
 
 :: Verificar que el setup se haya ejecutado
-if not exist "%BACKEND%\.venv" (
+if not exist "%BACKEND%.venv" (
     echo [ERROR] No se encontro el entorno virtual del backend.
     echo         Ejecuta setup.bat primero.
     pause & exit /b 1
