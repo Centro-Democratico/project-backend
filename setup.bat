@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 echo ================================================
 echo        KnowYourMarks - Setup
@@ -31,6 +31,9 @@ if errorlevel 1 (
     pause & exit /b 1
 )
 
+echo [OK] Dependencias verificadas.
+echo.
+
 :: ------------------------------------------------
 :: 2. Clonar o actualizar repositorios
 :: ------------------------------------------------
@@ -60,6 +63,26 @@ if not exist ".venv" (
     echo     Creando entorno virtual...
     python -m venv .venv
 )
+
+:: Siempre regenerar el .env para evitar problemas de codificacion
+echo.
+echo     Ingresa las credenciales de tu PostgreSQL local:
+set /p DB_USER="     Usuario [benchmark_user]: "
+if "!DB_USER!"=="" set DB_USER=benchmark_user
+set /p DB_PASSWORD="     Contrasena: "
+set /p DB_NAME="     Base de datos [benchmark_db]: "
+if "!DB_NAME!"=="" set DB_NAME=benchmark_db
+
+(
+    echo DB_HOST=localhost
+    echo DB_PORT=5432
+    echo DB_USER=!DB_USER!
+    echo DB_PASSWORD=!DB_PASSWORD!
+    echo DB_NAME=!DB_NAME!
+    echo ENV=development
+) > .env
+echo     .env generado correctamente.
+echo.
 
 call .venv\Scripts\activate
 pip install -r requirements.txt --quiet
