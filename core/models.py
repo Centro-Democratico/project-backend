@@ -199,7 +199,7 @@ class FPSSession(models.Model):
     gpu_max = models.FloatField(null=True, blank=True)
     ram_avg_gb = models.FloatField(null=True, blank=True)
     ram_max_gb = models.FloatField(null=True, blank=True)
-    # Métricas de FPS
+    # Métricas de FPSQ
     fps_avg = models.FloatField(null=True, blank=True)
     fps_max = models.FloatField(null=True, blank=True)
     fps_min = models.FloatField(null=True, blank=True)

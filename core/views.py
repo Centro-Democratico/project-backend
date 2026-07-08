@@ -231,9 +231,11 @@ def _session_to_dict(session):
         'id': str(session.id),
         'score': session.score,
         'is_anonymous': session.is_anonymous,
-        'started_at': session.started_at.isoformat(),
-        'ended_at': session.ended_at.isoformat(),
-        'created_at': session.created_at.isoformat(),
+        'started_at': session.started_at.isoformat() if session.started_at else None,
+        'ended_at': session.ended_at.isoformat() if session.ended_at else None,
+        'created_at': session.created_at.isoformat() if session.created_at else None,
+        'cpu_avg': session.cpu_avg,
+        'ram_avg_gb': session.ram_avg_gb,
     }
 
 def _session_to_report(session):
