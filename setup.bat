@@ -59,7 +59,7 @@ if not exist "%FRONTEND%" (
     cd /d "%FRONTEND%" && git pull
 )
 
-:: ------------------------------------------------
+
 :: ------------------------------------------------
 :: 3. Levantar base de datos con Docker
 :: ------------------------------------------------
@@ -71,16 +71,15 @@ echo     Esperando a que PostgreSQL este listo (10 segundos)...
 timeout /t 10 /nobreak >nul
 
 :: --- ¡AQUI AUTOMATIZAMOS EL SCRIPT DE NAEL! ---
-if exist "init.sql" (
+if exist "scripts\init.sql" (
     echo     Inyectando init.sql en el contenedor...
-    :: El flag -T es obligatorio en los .bat para que no pida consola interactiva
-    docker compose exec -T db psql -U postgres < init.sql
+    :: Redirigimos el archivo que esta dentro de la carpeta scripts
+    docker compose exec -T db psql -U postgres < scripts\init.sql
     echo     [OK] Base de datos y usuario creados desde init.sql.
 ) else (
-    echo     [ADVERTENCIA] No se encontro init.sql en la carpeta del backend.
+    echo     [ADVERTENCIA] No se encontro el archivo en scripts\init.sql
 )
 echo.
-
 :: ------------------------------------------------
 :: 4. Configurar backend
 :: ------------------------------------------------
