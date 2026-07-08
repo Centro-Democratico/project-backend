@@ -60,14 +60,26 @@ if not exist "%FRONTEND%" (
 )
 
 :: ------------------------------------------------
+:: ------------------------------------------------
 :: 3. Levantar base de datos con Docker
 :: ------------------------------------------------
 echo [3/5] Levantando base de datos con Docker...
 cd /d "%BACKEND%"
 docker compose up -d db
 
-echo     Esperando a que PostgreSQL este listo...
-timeout /t 5 /nobreak >nul
+echo     Esperando a que PostgreSQL este listo (10 segundos)...
+timeout /t 10 /nobreak >nul
+
+:: --- ¡AQUI AUTOMATIZAMOS EL SCRIPT DE NAEL! ---
+if exist "init.sql" (
+    echo     Inyectando init.sql en el contenedor...
+    :: El flag -T es obligatorio en los .bat para que no pida consola interactiva
+    docker compose exec -T db psql -U postgres < init.sql
+    echo     [OK] Base de datos y usuario creados desde init.sql.
+) else (
+    echo     [ADVERTENCIA] No se encontro init.sql en la carpeta del backend.
+)
+echo.
 
 :: ------------------------------------------------
 :: 4. Configurar backend
@@ -93,6 +105,8 @@ echo     .env generado correctamente.
 
 call .venv\Scripts\activate
 pip install -r requirements.txt --quiet
+
+echo     Ejecutando migraciones de Django...
 python manage.py migrate --run-syncdb
 
 :: ------------------------------------------------
