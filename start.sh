@@ -1,8 +1,8 @@
 #!/bin/bash
 
 BASE="$(cd "$(dirname "$0")" && pwd)"
-BACKEND="$BASE/project-backend"
-FRONTEND="$BASE/project-frontend"
+BACKEND="$BASE"
+FRONTEND="$BASE/../project-frontend"
 
 # Verificar que el setup se haya ejecutado
 if [ ! -d "$BACKEND/.venv" ]; then
